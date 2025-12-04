@@ -7,55 +7,64 @@ import type { Schema } from "../amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
 import outputs from "../amplify_outputs.json";
 import "@aws-amplify/ui-react/styles.css";
-
-console.log("App component loading...");
-console.log("Amplify outputs:", outputs);
-
 Amplify.configure(outputs);
 const amplifyClient = generateClient<Schema>();
-
 function App() {
   console.log("App component rendering...");
   const [result, setResult] = useState<string>("");
   const [loading, setLoading] = useState(false);
-  const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
-  event.preventDefault();
-  setLoading(true);
-  try {
-  const formData = new FormData(event.currentTarget);
-  const { data, errors } = await
-amplifyClient.queries.askBedrock({
-  ingredients: [formData.get("ingredients")?.toString() || ""],
-  });
-  if (!errors) {
-    setResult(data?.body || "No data returned");
-  } else {
-    console.log(errors);
-  }
+  
+  // Add a simple test to see if the component is working
+  console.log("App state:", { result, loading });
+ const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
+ event.preventDefault();
+ setLoading(true);
+ setResult(""); // Clear previous result
+ try {
+ const formData = new FormData(event.currentTarget);
+ const ingredients = formData.get("ingredients")?.toString() || "";
+ console.log("Submitting ingredients:", ingredients);
+ 
+ const { data, errors } = await amplifyClient.queries.askBedrock({
+ ingredients: [ingredients],
+ });
+ 
+ console.log("API Response:", { data, errors });
+ 
+ if (errors && errors.length > 0) {
+ console.error("API Errors:", errors);
+ setResult(`Error: ${JSON.stringify(errors)}`);
+ } else if (data) {
+ console.log("Recipe data received:", data);
+ setResult(data.body || "No recipe content returned");
+ } else {
+ setResult("No data returned from API");
+ }
  } catch (e) {
-  alert(`An error occurred: ${e}`);
+ console.error("Exception occurred:", e);
+ setResult(`An error occurred: ${e}`);
  } finally {
-  setLoading(false);
+ setLoading(false);
  }
  };
  return (
-  <div className="app-container">
-    <div className="header-container">
-    <h1 className="main-header">
-      Meet Your Personal
-    <br />
+ <div className="app-container">
+ <div className="header-container">
+ <h1 className="main-header">
+ Meet Your Personal
+ <br />
  <span className="highlight">Recipe AI</span>
-    </h1>
+ </h1>
  <p className="description">
  Simply type a few ingredients using the format ingredient1,
  ingredient2, etc., and Recipe AI will generate an all-new
 recipe on
  demand...
  </p>
-  </div>
-    <form onSubmit={onSubmit} className="form-container">
-      <div className="search-container">
-      <input
+ </div>
+ <form onSubmit={onSubmit} className="form-container">
+ <div className="search-container">
+ <input
  type="text"
  className="wide-input"
  id="ingredients"
@@ -77,10 +86,15 @@ recipe on
  <Placeholder size="large" />
  </div>
  ) : (
- result && <p className="result">{result}</p>
+ result && (
+ <div className="result">
+ <h3>Generated Recipe:</h3>
+ <pre style={{ whiteSpace: 'pre-wrap', textAlign: 'left' }}>{result}</pre>
+ </div>
+ )
  )}
  </div>
  </div>
  );
 }
-export default App
+export default App;

@@ -11,8 +11,9 @@ Amplify.configure(outputs);
 const amplifyClient = generateClient<Schema>({
   authMode: "userPool",
 });
-function App() {
+function App({ signOut, user }: { signOut?: () => void; user?: any }) {
   console.log("App component rendering...");
+  console.log("User:", user);
   const [result, setResult] = useState<string>("");
   const [loading, setLoading] = useState(false);
   
@@ -52,6 +53,16 @@ function App() {
  return (
  <div className="app-container">
  <div className="header-container">
+ {user && (
+ <div style={{ textAlign: 'right', marginBottom: '10px' }}>
+ <span>Welcome, {user.username}!</span>
+ {signOut && (
+ <button onClick={signOut} style={{ marginLeft: '10px' }}>
+ Sign Out
+ </button>
+ )}
+ </div>
+ )}
  <h1 className="main-header">
  Meet Your Personal
  <br />

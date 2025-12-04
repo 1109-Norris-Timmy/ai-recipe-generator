@@ -1,11 +1,12 @@
 export function request(ctx) {
     const { ingredients = [] } = ctx.args;
-// Construct the prompt with the provided ingredients
-    const prompt = `Suggest a recipe idea using these ingredients:
-${ingredients.join(", ")}.`;
-// Return the request configuration
+    
+    // Construct the prompt with the provided ingredients
+    const prompt = "Suggest a recipe idea using these ingredients: " + ingredients.join(", ") + ".";
+    
+    // Return the request configuration
     return {
-        resourcePath: `/model/anthropic.claude-3-sonnet-20240229-v1:0/invoke`,
+        resourcePath: "/model/anthropic.claude-3-sonnet-20240229-v1:0/invoke",
         method: "POST",
         params: {
             headers: {
@@ -20,7 +21,7 @@ ${ingredients.join(", ")}.`;
                         content: [
                             {
                                 type: "text",
-                                text: `\n\nHuman: ${prompt}\n\nAssistant:`,
+                                text: "Human: " + prompt + "\n\nAssistant:",
                             },
                         ],
                     },
@@ -29,13 +30,26 @@ ${ingredients.join(", ")}.`;
         },
     };
 }
+
 export function response(ctx) {
-// Parse the response body
+    // Parse the response body
     const parsedBody = JSON.parse(ctx.result.body);
-// Extract the text content from the response
-    const res = {
-        body: parsedBody.content[0].text,
+    
+    // Extract the text content from the response with error handling
+    let bodyText = "No response content available";
+    
+    try {
+        if (parsedBody && parsedBody.content && Array.isArray(parsedBody.content) && parsedBody.content.length > 0) {
+            if (parsedBody.content[0] && parsedBody.content[0].text) {
+                bodyText = parsedBody.content[0].text;
+            }
+        }
+    } catch (error) {
+        bodyText = "Error parsing response: " + error.message;
+    }
+    
+    return {
+        body: bodyText,
     };
-// Return the response
-    return res;
 }
+

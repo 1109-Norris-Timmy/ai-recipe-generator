@@ -8,7 +8,9 @@ import { generateClient } from "aws-amplify/data";
 import outputs from "../amplify_outputs.json";
 import "@aws-amplify/ui-react/styles.css";
 Amplify.configure(outputs);
-const amplifyClient = generateClient<Schema>();
+const amplifyClient = generateClient<Schema>({
+  authMode: "userPool",
+});
 function App() {
   console.log("App component rendering...");
   const [result, setResult] = useState<string>("");
